@@ -9,9 +9,9 @@ onMounted(async () => { rows.value = await api('/dishes') })
   <p class="sub">中央厨房出品菜品</p>
   <div class="card">
     <table>
-      <thead><tr><th>编码</th><th>名称</th><th>单位</th></tr></thead>
+      <thead><tr><th>编码</th><th>名称</th><th>单位</th><th>出品率</th></tr></thead>
       <tbody>
-        <tr v-for="r in rows" :key="r.id ?? JSON.stringify(r)"><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.portion_unit }}</td></tr>
+        <tr v-for="r in rows" :key="r.id ?? JSON.stringify(r)"><td>{{ r.code }}</td><td>{{ r.name }}</td><td>{{ r.portion_unit }}</td><td>{{ r.yield_rate ?? '—' }}</td></tr>
       </tbody>
     </table>
   </div>

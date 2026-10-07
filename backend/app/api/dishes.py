@@ -7,5 +7,6 @@ router = APIRouter(prefix="/dishes", tags=["dishes"])
 
 @router.get("")
 def list_dishes(db: Session = Depends(get_db)):
-    return [{"id": r.id, "code": r.code, "name": r.name, "portion_unit": r.portion_unit}
+    return [{"id": r.id, "code": r.code, "name": r.name, "portion_unit": r.portion_unit,
+             "yield_rate": r.yield_rate}
             for r in db.scalars(select(Dish).order_by(Dish.id)).all()]

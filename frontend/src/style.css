@@ -165,6 +165,13 @@ th { color: var(--kp-muted); font-weight: 700; font-size: 0.75rem; }
 }
 .btn:hover { filter: brightness(1.06); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.kp-rate-input {
+  width: 5rem; padding: 0.2rem 0.35rem;
+  border: 1px solid var(--kp-steel); border-radius: 2px;
+  background: #fbf7ef; color: var(--kp-ink);
+  font-size: 0.82rem; text-align: right;
+}
+.kp-rate-input:focus { outline: 2px solid var(--kp-accent); outline-offset: -1px; }
 .muted { color: var(--kp-muted); }
 .stat { font-size: 1.5rem; font-weight: 800; }
 

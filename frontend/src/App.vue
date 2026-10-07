@@ -8,7 +8,7 @@ import { RouterLink, RouterView } from 'vue-router'
       <nav class="kp-chips">
         <RouterLink to="/orders" class="kp-chip">订单</RouterLink>
         <RouterLink to="/prep" class="kp-chip">备料单</RouterLink>
-        <RouterLink to="/bom" class="kp-chip">BOM树</RouterLink>
+        <RouterLink to="/bom" class="kp-chip">BOM定额</RouterLink>
         <RouterLink to="/dishes" class="kp-chip">菜品</RouterLink>
         <RouterLink to="/shortages" class="kp-chip">缺料</RouterLink>
         <RouterLink to="/inventory" class="kp-chip">库存</RouterLink>

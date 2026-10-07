@@ -3,22 +3,24 @@ import { onMounted, ref } from 'vue'
 import { api } from '../api'
 const rows = ref<any[]>([])
 const stats = ref<any>({})
+const hasRun = ref(true)
 onMounted(async () => {
   const res = await api('/prep/shortages?order_id=1')
-  rows.value = res.shortages; stats.value = res.stats
+  rows.value = res.shortages; stats.value = res.stats; hasRun.value = res.has_run
 })
 </script>
 <template>
   <h1>缺料便利贴</h1>
-  <p class="sub">shortage = need − stock（仅正数）</p>
+  <p class="sub">shortage = need − stock（仅正数）· 来自已落库当前备料单</p>
+  <p v-if="!hasRun" class="sub">尚未生成备料单，请先在备料台点击「生成备料单」。</p>
   <div class="kp-shortage-sticky" style="max-width:360px;transform:rotate(-1deg);margin-bottom:1rem">
-    <h2>⚠ 缺料 {{ stats.shortage_count }} · 合计 {{ stats.total_shortage_qty }}</h2>
+    <h2>⚠ 缺料 {{ stats.shortage_count ?? 0 }} · 合计 {{ stats.total_shortage_qty ?? 0 }}</h2>
     <div v-for="r in rows" :key="r.ingredient_id" class="kp-shortage-item">
       <span>{{ r.ingredient_name }}</span>
       <span class="kp-qty">−{{ r.shortage }} {{ r.unit }}</span>
     </div>
   </div>
-  <div class="card">
+  <div class="card" v-if="rows.length">
     <table>
       <thead><tr><th>原料</th><th>需求</th><th>库存</th><th>缺料</th><th>单位</th></tr></thead>
       <tbody>

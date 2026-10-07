@@ -9,6 +9,8 @@ class Dish(Base):
     code: Mapped[str] = mapped_column(String(32), unique=True)
     name: Mapped[str] = mapped_column(String(128))
     portion_unit: Mapped[str] = mapped_column(String(16), default="份")
+    # 出品出成率定义仓：NULL = 从未写过，按 1 处理
+    yield_rate: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 class Ingredient(Base):
     __tablename__ = "ingredients"
@@ -24,6 +26,8 @@ class BomLine(Base):
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id"))
     ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
     qty_per_portion: Mapped[float] = mapped_column(Float)
+    # 用料出成率定义仓：NULL = 从未写过，按 1 处理
+    yield_rate: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 class KitchenOrder(Base):
     __tablename__ = "kitchen_orders"
@@ -44,4 +48,6 @@ class PrepRun(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     order_id: Mapped[int] = mapped_column(ForeignKey("kitchen_orders.id"))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    # current = 当前有效单（随定义仓整张重写）；archived = 已钉死历史单（禁止改字）
+    status: Mapped[str] = mapped_column(String(16), default="current")
     result_json: Mapped[str] = mapped_column(Text, default="{}")
