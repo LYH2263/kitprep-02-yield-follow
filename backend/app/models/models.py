@@ -24,6 +24,8 @@ class BomLine(Base):
     dish_id: Mapped[int] = mapped_column(ForeignKey("dishes.id"))
     ingredient_id: Mapped[int] = mapped_column(ForeignKey("ingredients.id"))
     qty_per_portion: Mapped[float] = mapped_column(Float)
+    # 出成率：None 表示从未写过，按 1 处理（需求 = 定额 × 份数）；合法区间 (0, 1]
+    yield_rate: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
 class KitchenOrder(Base):
     __tablename__ = "kitchen_orders"

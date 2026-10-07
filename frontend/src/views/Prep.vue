@@ -5,17 +5,32 @@ const tree = ref<any[]>([])
 const data = ref<any>(null)
 const shortages = ref<any[]>([])
 const orders = ref<any[]>([])
-async function run() {
-  data.value = await api('/prep/run?order_id=1', { method: 'POST' })
+const error = ref('')
+async function loadShortages() {
   try {
     const res = await api('/prep/shortages?order_id=1')
     shortages.value = res.shortages || []
   } catch { shortages.value = [] }
 }
+async function loadLatest() {
+  // 打开备料台只读已落库的当前有效单，绝不现算
+  try { data.value = await api('/prep/latest?order_id=1') }
+  catch { data.value = null }
+}
+async function run() {
+  error.value = ''
+  try {
+    data.value = await api('/prep/run?order_id=1', { method: 'POST' })
+    await loadShortages()
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  }
+}
 onMounted(async () => {
   tree.value = await api('/bom/tree')
   orders.value = await api('/orders')
-  await run()
+  await loadLatest()
+  await loadShortages()
 })
 </script>
 <template>
@@ -27,6 +42,7 @@ onMounted(async () => {
     </span>
   </div>
   <button class="btn" @click="run">生成备料单</button>
+  <span v-if="error" class="badge badge-bad" style="margin-left:0.6rem">{{ error }}</span>
   <div class="kp-workbench" style="margin-top:0.85rem">
     <aside class="kp-bom-tree">
       <h2>菜品 / BOM</h2>
@@ -34,7 +50,10 @@ onMounted(async () => {
         <strong>{{ d.dish }}</strong>
         <span style="font-size:0.7rem;color:#8a8078">{{ d.code }}</span>
         <ul>
-          <li v-for="(c,i) in d.children" :key="i">{{ c.ingredient }} · {{ c.qty }} {{ c.unit }}</li>
+          <li v-for="(c,i) in d.children" :key="i">
+            {{ c.ingredient }} · {{ c.qty }} {{ c.unit }}
+            <span v-if="c.yield_rate !== null && c.yield_rate !== undefined"> · 出成率 {{ c.yield_rate }}</span>
+          </li>
         </ul>
       </div>
     </aside>
@@ -48,6 +67,10 @@ onMounted(async () => {
           </tr>
         </tbody>
       </table>
+    </section>
+    <section class="kp-worksheet" v-else>
+      <h2>备料单</h2>
+      <p class="muted">尚未生成备料单 · 点击上方「生成备料单」按当前定额落库</p>
     </section>
     <aside class="kp-shortage-sticky">
       <h2>⚠ 缺料便利贴</h2>

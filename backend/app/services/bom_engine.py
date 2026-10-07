@@ -1,4 +1,4 @@
-"""Central kitchen BOM explode: order lines × BOM qty, merge ingredients, shortage = need - stock."""
+"""Central kitchen BOM explode: order lines × BOM qty ÷ yield rate, merge ingredients, shortage = need - stock."""
 from __future__ import annotations
 from dataclasses import asdict, dataclass
 
@@ -12,18 +12,33 @@ class NeedLine:
     stock_qty: float
     shortage: float
 
+def _effective_qty_per_portion(bom_line: dict) -> float:
+    """qty_per_portion 按出成率折算：出成率 None 或 1 时与一层展开完全一致。"""
+    rate = bom_line.get("yield_rate")
+    if rate is None:
+        return bom_line["qty_per_portion"]
+    rate = float(rate)
+    if not 0.0 < rate <= 1.0:
+        raise ValueError(f"出成率必须大于 0 且不超过 1，收到: {rate!r}")
+    if rate == 1.0:
+        return bom_line["qty_per_portion"]
+    return bom_line["qty_per_portion"] / rate
+
 def explode_and_merge(
     order_lines: list[dict],
     bom_lines: list[dict],
     ingredients: dict[int, dict],
 ) -> list[NeedLine]:
-    """order_lines: dish_id, portions; bom_lines: dish_id, ingredient_id, qty_per_portion."""
+    """order_lines: dish_id, portions; bom_lines: dish_id, ingredient_id, qty_per_portion, yield_rate?."""
     need: dict[int, float] = {}
     for ol in order_lines:
         for bl in bom_lines:
             if bl["dish_id"] != ol["dish_id"]:
                 continue
-            need[bl["ingredient_id"]] = need.get(bl["ingredient_id"], 0.0) + ol["portions"] * bl["qty_per_portion"]
+            need[bl["ingredient_id"]] = (
+                need.get(bl["ingredient_id"], 0.0)
+                + ol["portions"] * _effective_qty_per_portion(bl)
+            )
     lines: list[NeedLine] = []
     for iid, qty in sorted(need.items()):
         ing = ingredients[iid]
